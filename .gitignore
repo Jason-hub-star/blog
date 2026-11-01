@@ -1,0 +1,26 @@
+# Public branch allowlist. Actual jobs and review/customer media stay local.
+/*
+!/.gitignore
+!/.gitattributes
+!/AGENTS.md
+!/CLAUDE.md
+!/STATUS.md
+!/README.md
+!/requirements.txt
+!/post.example.json
+!/.agents/
+!/.claude/
+!/.github/
+!/automation/
+!/assets/
+!/scripts/
+!/tests/
+!/docs/
+**/__pycache__/
+*.pyc
+*.local.json
+.env
+.env.*
+*.zip
+.DS_Store
+Thumbs.db

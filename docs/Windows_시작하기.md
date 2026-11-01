@@ -1,0 +1,45 @@
+# Windows에서 금강이지스 이어받기
+
+## 1. 별도 폴더로 받기
+
+```powershell
+git clone --single-branch --branch geumgang-aegis https://github.com/Jason-hub-star/blog.git blog-geumgang
+cd blog-geumgang
+py -3 scripts/setup.py
+git branch --show-current
+```
+
+마지막 결과는 `geumgang-aegis`다. 중문매니저 `main` 폴더와 분리한다. Git/Python3.10 이상/Node.js를 준비하고, 전체 검사나 GIF 생성에는 FFmpeg가 PATH에 있어야 한다. Python 가상환경 활성화와 PowerShell 실행 정책 변경은 필요 없다.
+
+## 2. 현재 실제 글 자료 옮기기
+
+공개 Git에는 고객 원본·실제 현장 원고·후기 캡처·로그인 정보를 넣지 않는다. Mac에서 준비한 **금강이지스_Windows_작업이전.zip**을 USB나 본인이 쓰는 파일 전달 방식으로 가져온다. Windows 기본 압축 풀기를 사용해 이 저장소 루트에 내용물을 합친다. 중문매니저 폴더에는 풀지 않는다. 코드/스킬/폰트는 Git에서 받고, 이전 묶음은 `현장작업/`, `리뷰조사/`, `후기레퍼런스/`, `재료/`의 작업 자료만 보충한다.
+
+현재 이어받을 글:
+
+| 현장 폴더 | 본문/후기 캡처 | 네이버 임시글 제목 |
+|---|---|---|
+| 2026-11-01_명지_오픈형3연동 | 1783자, 전후 콜라주 | 부산 명지 현관 중문 \| 한신휴플러스 화이트 3연동으로 정리한 현관 |
+| 2026-11-01_원슬라이딩_구매후기 | 1746자, 후기4건 | 부산 원슬라이딩 중문 후기 \| 답답해 보일까? 유리·마감 선택 포인트 |
+| 2026-11-01_양개도어_구매후기 | 1762자, 후기7건 | 부산 양개도어 중문 후기 \| 예쁜 디자인, 열리는 자리까지 확인하세요 |
+
+이전 묶음은 과거 잘못된 커버·사용금지 이전버전·불필요한 검사 GIF를 제외하고 현재 원본/설정/제작물/저장 증거를 보존한다. 한국어 파일명은 Windows용 NFC로 정규화하고 사진 바이트는 그대로 유지한다.
+
+```powershell
+.venv\Scripts\python.exe automation/build_post.py --job "현장작업\2026-11-01_원슬라이딩_구매후기" --check
+node automation/check_editor_verifier.mjs
+```
+
+## 3. Codex / Claude에서 열기
+
+`blog-geumgang` 폴더 자체를 작업 폴더로 열고 금강이지스 `geumgang-aegis-blog-production` 스킬을 지정한다. `AGENTS.md`→`STATUS.md`→현재 글 `post.json` 순서다. 스킬 목록에 없으면 프로젝트를 다시 열거나 스킬 정본 경로를 직접 지목한다.
+
+새 현장은 setup이 만든 `현장작업/새_현장`에서 시작할 수 있다. 원본 사진과 사실 메모를 넣고 에이전트에게 원본 SHA 목록·전후 분류·실제 원고를 작성하게 한다. 가상 예시는 `needs_authoring:true`로 잠겨 있으며, 사진/원고를 확인하기 전에는 제작하지 않는다. 새 현장을 별도 폴더로 만들 때도 이 예시를 복사하고 기존 글을 덮어쓰지 않는다.
+
+## 4. 네이버 로그인과 첫 저장 검증
+
+Windows Chrome에서 **artdoorstore** 계정으로 로그인하고 허용된 브라우저 제어 도구를 연결한다. 쿠키·비밀번호·세션은 Git/이전 묶음에 넣지 않는다. 사용 가능한 도구의 안내를 먼저 읽는다.
+
+UI 보조 모듈이 해당 환경의 cua_repl API와 맞으면 `automation/browser_helpers.mjs`의 `createNaverOps(tab, app, {platform:'windows'})`를 쓴다. Windows 파일창은 실제 접근성 트리의 File name/파일 이름·Open/열기를 확인한다. 다른 형식이면 현재 UI를 읽어 `chooseFile`을 제공하거나 직접 첨부한다. Mac `super` 키·앱 경로·파일창 번호를 가져오지 않는다.
+
+이미 작성한 글은 제목으로 임시저장 목록에서 불러오고, 사용자가 바꾼 내용부터 읽는다. 사진·후기별 캡처·PNG 대표·배너3주소를 확인한 뒤 저장→새로고침→같은 제목 재불러오기를 한다. `automation/verify_editor.mjs`는 실제 읽기 DOM으로17조건을 확인한다. 같은 상품 리뷰의 실제 주소는 네이티브 링크 입력창에서도 대조한다. Windows UI 실기는 아직 별도 확인 항목이다. 공개 발행·통화는 이 이전 작업의 후속 단계가 아니다.

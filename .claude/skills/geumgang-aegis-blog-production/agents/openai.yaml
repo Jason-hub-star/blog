@@ -1,0 +1,4 @@
+interface:
+  display_name: "금강이지스 블로그 제작"
+  short_description: "금강이지스 원고·썸네일·GIF·실제 후기 카드 제작과 임시저장 복원 검증"
+  default_prompt: "$geumgang-aegis-blog-production 스킬로 금강이지스 초안을 제작하고 실제 저장복원까지 검증해줘."

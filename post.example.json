@@ -1,0 +1,93 @@
+{
+  "brand": "금강이지스",
+  "blog_id": "artdoorstore",
+  "font": "나눔고딕",
+  "body_size": 15,
+  "heading_size": 30,
+  "banners": [
+    {
+      "suffix": "15-18-10.png",
+      "url": "tel:01054835057"
+    },
+    {
+      "suffix": "15-18-18.png",
+      "url": "https://open.kakao.com/o/sg21BVHb"
+    },
+    {
+      "suffix": "15-17-53.png",
+      "url": "https://www.instagram.com/kumkangaegis/"
+    }
+  ],
+  "accent_color": "#E99025",
+  "logo_star_color": "#248A76",
+  "body_length_min": 1500,
+  "body_length_max": 1800,
+  "needs_authoring": true,
+  "title": "가상 예시 | 현장 사실 확인 후 작성",
+  "template": "금강이지스 템플릿",
+  "thumbnail_lines": [
+    "확인된 시공 후",
+    "사진으로 제작"
+  ],
+  "gif_effect": "페이드",
+  "cover": "시공후_확인필요.jpg",
+  "excluded": [],
+  "photos": [
+    "시공후_확인필요.jpg"
+  ],
+  "photo_stages": {
+    "시공후_확인필요.jpg": "unconfirmed"
+  },
+  "cover_evidence": "실제 사진을 확인한 후 기록",
+  "logo": "assets/brand/logo.png",
+  "logo_sha256": "f99efdbefcba35403656eea8e240dbe9b7fb794438a1a5b00012b2d344565919",
+  "store": "https://smartstore.naver.com/kkartwindow",
+  "tags": [
+    "가상태그1",
+    "가상태그2",
+    "가상태그3",
+    "가상태그4",
+    "가상태그5",
+    "가상태그6",
+    "가상태그7",
+    "가상태그8",
+    "가상태그9",
+    "가상태그10",
+    "가상태그11",
+    "가상태그12",
+    "가상태그13",
+    "가상태그14",
+    "가상태그15"
+  ],
+  "blocks": [
+    {
+      "type": "quote",
+      "text": "확인된 현장 정보로 본문의 핵심을 한 줄로 요약합니다.",
+      "size": 19,
+      "style": "인용구 1"
+    },
+    {
+      "type": "p",
+      "text": "사진과 현장 사실을 확인하고 본문1500~1800자를 새로 작성하세요."
+    },
+    {
+      "type": "image",
+      "name": "animation",
+      "marker": "〔움직이는 썸네일〕"
+    },
+    {
+      "type": "h",
+      "text": "현장 조건에 맞는 소제목"
+    },
+    {
+      "type": "image",
+      "name": "photo_001",
+      "marker": "〔현장 사진 1〕"
+    },
+    {
+      "type": "image",
+      "name": "thumbnail",
+      "marker": "〔대표 PNG〕"
+    }
+  ]
+}
