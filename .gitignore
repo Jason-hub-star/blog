@@ -16,6 +16,7 @@
 !/tests/
 !/harnesses/
 !/docs/
+!/templates/
 # Local inputs, build products, credentials and environment are never shared.
 *.local.json
 .env
