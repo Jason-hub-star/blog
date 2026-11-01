@@ -1,0 +1,19 @@
+# Future public sharing: only reviewed instructions/docs; keep all existing customer material local.
+/*
+!/.gitignore
+!/.gitattributes
+!/AGENTS.md
+!/CLAUDE.md
+!/README.md
+!/STATUS.md
+!/사진받기_안내.md
+!/docs/
+!/templates/
+!/assets/
+# Local analysis/evidence are not part of the portable KB starter.
+/docs/사진수신_사전분석.md
+/docs/evidence/
+*.local.json
+*.rtf
+.DS_Store
+**/__pycache__/
