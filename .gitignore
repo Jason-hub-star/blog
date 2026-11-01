@@ -16,6 +16,7 @@
 !/scripts/
 !/tests/
 !/docs/
+!/templates/
 **/__pycache__/
 *.pyc
 *.local.json

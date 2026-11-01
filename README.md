@@ -2,6 +2,8 @@
 
 대상은 **금강이지스 / 네이버 artdoorstore**다. 같은 저장소의 `main`은 중문매니저이고 이 프로젝트는 `geumgang-aegis` 브랜치다. 작업 폴더를 따로 받는다.
 
+새 사진은 **[공통 사진 분리 가이드](templates/blog-photo-intake/README.md)**대로 `사진접수/현장`의 전·후·확인필요·영상·참고자료에 나눕니다. 원본 보관과 기존 `현장작업`의 제작 사본을 구분하며, 다른 브랜드와 같은 빈 양식만 공유합니다.
+
 ## Windows 시작
 
 Git, Python3.10 이상, Node.js를 준비한 PowerShell에서:
@@ -27,6 +29,8 @@ py -3 scripts/setup.py
 - 공식스토어→전화→카카오톡→인스타그램→태그15개
 
 ## 제작·검사
+
+아래 명령에는 항상 `--job`을 명시합니다. 인자를 생략하면 기존 명지 현장을 찾으며, 새 clone에는 실제 고객 현장 자료가 없습니다. 새 현장은 setup의 가상 `새_현장`을 고유 이름으로 복사하고 실제 사진·메모·원본목록·전후/대표 근거·본문을 채운 뒤 제작합니다.
 
 ```powershell
 .venv\Scripts\python.exe automation/build_post.py --job "현장작업\대상현장"
