@@ -1,0 +1,12 @@
+[
+  {
+    "file": "NanumSquareEB.ttf",
+    "sha256": "6608adc320ff8514630d04a53e16cc7a5d54f5cbdbe3769109f311dcb3b48f80",
+    "source": "https://hangeul.naver.com/font"
+  },
+  {
+    "file": "NanumMyeongjo-ExtraBold.ttf",
+    "sha256": "60c0077fce069ba90ae97c0a3679f6eb3712e0ca637bdd0c15b72d335ec46db7",
+    "source": "https://github.com/google/fonts/tree/main/ofl/nanummyeongjo"
+  }
+]

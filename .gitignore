@@ -1,0 +1,27 @@
+# Root allowlist: existing customer folders and personal documents stay local.
+/*
+!/.gitignore
+!/.gitattributes
+!/AGENTS.md
+!/CLAUDE.md
+!/README.md
+!/requirements.txt
+!/post.example.json
+!/.agents/
+!/.claude/
+!/.github/
+!/automation/
+!/assets/
+!/scripts/
+!/tests/
+!/harnesses/
+!/docs/
+# Local inputs, build products, credentials and environment are never shared.
+*.local.json
+.env
+.env.*
+*.rtf
+**/__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

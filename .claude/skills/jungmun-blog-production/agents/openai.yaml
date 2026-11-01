@@ -1,0 +1,4 @@
+interface:
+  display_name: "중문매니저 블로그 제작"
+  short_description: "현장 사진 보정부터 모바일 원고·썸네일과 네이버 초안 검증까지"
+  default_prompt: "$jungmun-blog-production으로 이번 현장 사진을 보정하고 모바일 원고와 썸네일을 만들어 임시저장까지 확인해줘."
