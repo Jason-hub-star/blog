@@ -18,7 +18,8 @@
 
 - 이식판70785fb: [Actions41278321682](https://github.com/Jason-hub-star/blog/actions/runs/41278321682) Windows/Linux 모두 성공.
 - 원격 clone를 한글/공백 임시 경로에 새로 받아 self_check·Node 검사 통과. 실제 사진·개인 설정이 clone에 없는 것도 확인했다.
-- 이번 간격/인계 변경의 최신 원격 검사 결과는 push 후 아래에 추가한다.
+- 이번 간격/인계 변경0f20aa8: [Actions41279127201](https://github.com/Jason-hub-star/blog/actions/runs/41279127201)의 Windows/Linux 모두 성공. 각 OS에서 `python scripts/check.py`까지 성공한 것을 GitHub jobs 결과로 확인했다. 로컬 HEAD와 origin/main이 같은 커밋인 것도 확인했다.
+- 공용 하네스 저장소의 호환 라우터·하네스·REGISTRY를 최신16조건과 인계 경로로 갱신하고 check-skills.sh/check-doc-consistency.sh 모두 통과했다. 다른 프로젝트의 기존 변경은 이 blog 커밋에 포함하지 않았다.
 
 ## 감사에서 확인·수정한 문제
 

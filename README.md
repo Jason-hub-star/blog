@@ -44,6 +44,7 @@ python3 scripts/new_job.py "지역_아파트명"
 
 - 실행 정본: `.claude/skills/jungmun-blog-production/SKILL.md`
 - Codex 발견 경로: `.agents/skills/jungmun-blog-production/SKILL.md`가 정본을 읽도록 연결한다. Git 심볼릭 링크가 필요 없다.
+- 저장소 `.agents/skills` 경로는 [OpenAI Docs](https://learn.chatgpt.com/docs/build-skills)의 로컬 스킬 발견 규칙에 따른다. 갱신한 스킬이 보이지 않으면 Codex를 다시 시작한다.
 - 사진/원고 생성은 Python만으로 된다. 네이버 로그인·Chrome 프로필·브라우저 제어 연결은 각 컴퓨터에서 준비한다. Git으로 세션이나 로그인 정보를 이전하지 않는다.
 - 이 세션의 cua_repl 보조 모듈은 `automation/browser_helpers.mjs`. 다른 에이전트의 GUI 도구가 동일 API를 제공한다고 가정하지 않는다. 사용 가능한 UI 도구로 같은 검증 순서를 수행한다.
 
