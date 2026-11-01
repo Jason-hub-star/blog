@@ -38,6 +38,13 @@ def body_text(config):
                    for b in config["blocks"] if b["type"] != "image")
 
 
+def tags_text(config):
+    tags = config.get("tags", [])
+    if tags and (len(tags) != 15 or len(set(tags)) != 15 or not all(re.fullmatch(r"\w+", t) for t in tags)):
+        raise ValueError("태그는 #/공백 없이 서로 다른 단어15개를 지정하세요")
+    return "\n".join(" ".join("#" + tag for tag in tags[i:i+3]) for i in range(0, len(tags), 3))
+
+
 def tone(image, gammas):
     # 채널별 감마로 중간 밝기·온도를 올리되 흰색255와 검정0은 유지한다.
     return image.point([round(255 * (v / 255) ** gamma)
@@ -46,7 +53,10 @@ def tone(image, gammas):
 
 def build(config):
     start = time.monotonic()
+    if config.get("needs_authoring"):
+        raise ValueError("새 현장 사진·메모로 원고/태그를 확인하고 needs_authoring을 false로 바꾸세요")
     assert len(body_text(config)) == config["body_target_chars"], "본문 글자 수 불일치"
+    hashtags = tags_text(config)
     source, out = Path(config["source_dir"]), Path(config["output_dir"])
     source, out = source.resolve(), out.resolve()
     if source == out or source in out.parents or out in source.parents:
@@ -175,22 +185,29 @@ def build(config):
             if heading:
                 content = "<strong>"+content+"</strong>"
             # 교체할 구간이 굵은 소제목으로 시작해도 일반 본문은 굵기를 상속하지 않는다.
-            fragment = f'<p style="font-family:나눔스퀘어;font-size:{size}px;font-weight:normal;line-height:{1.5 if heading else 2.1};">{content}</p><p style="font-size:16px;font-weight:normal;line-height:2.1;"><br></p>'
+            fragment = f'<p style="font-family:나눔스퀘어;font-size:{size}px;font-weight:normal;line-height:{1.5 if heading else 2.1};">{content}</p>'
+            if block.get("gap_after", True):
+                fragment += '<p style="font-size:16px;font-weight:normal;line-height:2.1;"><br></p>'
             preview.append(fragment)
             group.append(fragment)
-            plain += [block["text"].replace("**", ""), ""]
+            plain += [block["text"].replace("**", "")]
+            if block.get("gap_after", True):
+                plain.append("")
         fragments.append(fragment)
     if group:
         text_groups.append("".join(group))
     (out/"구간별_본문.json").write_text(json.dumps(text_groups, ensure_ascii=False, indent=2), encoding="utf-8")
     (out/"편집기_붙여넣기.html").write_text("".join(fragments), encoding="utf-8")
     (out/"본문.txt").write_text("\n".join(plain), encoding="utf-8")
-    (out/"본문_1800자.txt").write_text("\n\n".join(b["text"].replace("**", "") for b in config["blocks"] if b["type"] != "image"), encoding="utf-8")
+    (out/"본문_1800자.txt").write_text("".join(b["text"].replace("**", "") + ("\n\n" if b.get("gap_after", True) else "\n") for b in config["blocks"] if b["type"] != "image"), encoding="utf-8")
+    tags_html = "".join('<p style="font-family:나눔스퀘어;font-size:16px;font-weight:normal;line-height:2.1;">'+html.escape(line)+'</p>' for line in hashtags.splitlines())
+    (out/"태그.txt").write_text(hashtags, encoding="utf-8")
+    (out/"태그_붙여넣기.html").write_text(tags_html, encoding="utf-8")
     banner_target = out/"템플릿_상담배너.png"
     if banner_source and banner_source.resolve() != banner_target.resolve():
         shutil.copy2(banner_source, banner_target)
     banner = ('<a href="'+html.escape(config["banner_link"], quote=True)+'"><img src="템플릿_상담배너.png" alt="중문매니저 전화 상담"></a>') if banner_target.exists() else '<p style="font-size:16px">[네이버 내 템플릿의 기존 전화 상담 배너를 마지막에 삽입]</p>'
-    preview_html = '<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+html.escape(config["title"])+'</title><style>body{max-width:720px;margin:36px auto;padding:0 20px;font-family:Arial,sans-serif;color:#222}h1{font-size:25px;line-height:1.5}p{margin:0;overflow-wrap:anywhere}img{width:100%;height:auto;margin:22px 0}</style><h1>'+html.escape(config["title"])+'</h1>'+"".join(preview)+banner+'</html>'
+    preview_html = '<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+html.escape(config["title"])+'</title><style>body{max-width:720px;margin:36px auto;padding:0 20px;font-family:Arial,sans-serif;color:#222}h1{font-size:25px;line-height:1.5}p{margin:0;overflow-wrap:anywhere}img{width:100%;height:auto;margin:22px 0}</style><h1>'+html.escape(config["title"])+'</h1>'+"".join(preview)+banner+tags_html+'</html>'
     (out/"모바일_미리보기.html").write_text(preview_html, encoding="utf-8")
     assert before == {str(p): sha(p) for p in photos}, "원본 변경 감지"
     manifest["build_seconds"] = round(time.monotonic()-start, 3)
@@ -242,10 +259,12 @@ def check(out):
     actual_body = (out/"본문_1800자.txt").read_text(encoding="utf-8").replace("\n", "")
     assert actual_body == body_text(m["config"])
     assert len(actual_body) == m["config"]["body_target_chars"]
+    assert (out/"태그.txt").read_text(encoding="utf-8") == tags_text(m["config"])
     result = {"result":"PASS", "photos":len(m["photos"]), "gif_frames":gif.n_frames,
               "body_chars":len(actual_body), "body_count_rule":m["config"]["body_count_rule"],
+              "tag_count":len(m["config"].get("tags", [])),
               "duration_ms":duration, "build_seconds":m["build_seconds"],
-              "checks":["source hashes", "dimensions", "photo geometry", "brighter", "house silhouette", "brand without box", "fixed background", "loop", "end hold", "PNG matches final GIF", "font styles", "photo slots", "exact body character count"]}
+              "checks":["source hashes", "dimensions", "photo geometry", "brighter", "house silhouette", "brand without box", "fixed background", "loop", "end hold", "PNG matches final GIF", "font styles", "photo slots", "exact body character count", "separate tags"]}
     (out/"검증결과.json").write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False))
 

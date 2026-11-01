@@ -102,19 +102,34 @@ export function createNaverOps(ed, chromeApp, { platform, chooseFile } = {}) {
 
 export async function verifyEditor(ed, config) {
   const observed = await ed.playwright.frameLocator('#mainFrame').getByRole('article').evaluate(e => {
-    const paragraphs = Array.from(e.querySelectorAll('.se-component.se-text p'));
+    const components = Array.from(e.querySelectorAll('.se-component'));
     const images = Array.from(e.querySelectorAll('.se-component.se-image'));
-    const spans = Array.from(e.querySelectorAll('.se-component.se-text span.__se-node')).filter(s => s.innerText.trim());
+    const bannerIndex = components.indexOf(images.at(-1));
+    const textComponents = components.slice(0, bannerIndex).filter(c => c.classList.contains('se-text'));
+    const paragraphs = textComponents.flatMap(c => Array.from(c.querySelectorAll('p')));
+    const spans = textComponents.flatMap(c => Array.from(c.querySelectorAll('span.__se-node'))).filter(s => s.innerText.trim());
+    const tail = components.slice(bannerIndex+1).filter(c => c.classList.contains('se-text'));
+    const tailSpans = tail.flatMap(c => Array.from(c.querySelectorAll('span.__se-node'))).filter(s => s.innerText.trim());
+    const lastParagraphs = textComponents.at(-1) ? Array.from(textComponents.at(-1).querySelectorAll('p')) : [];
+    const greeting = paragraphs.find(p => p.innerText.trim() === '안녕하세요.');
+    const trailingBlankCount = lastParagraphs.length - 1 - lastParagraphs.map(p => !!p.innerText.trim()).lastIndexOf(true);
     return {
       title: e.querySelector('.se-documentTitle').innerText,
       lines: paragraphs.map(p => p.innerText.trim()).filter(Boolean),
-      headingLines: Array.from(e.querySelectorAll('.se-component.se-text .se-fs30 b')).map(b => b.innerText).filter(s => s.trim()),
-      bodyBold: Array.from(e.querySelectorAll('.se-component.se-text .se-fs16 b')).map(b => b.innerText).filter(s => s.trim()),
+      headingLines: textComponents.flatMap(c => Array.from(c.querySelectorAll('.se-fs30 b'))).map(b => b.innerText).filter(s => s.trim()),
+      bodyBold: textComponents.flatMap(c => Array.from(c.querySelectorAll('.se-fs16 b'))).map(b => b.innerText).filter(s => s.trim()),
       fontClasses: Array.from(new Set(spans.map(s => Array.from(s.classList).find(c => /^se-fs/.test(c))))),
       paragraphFonts: paragraphs.filter(p => p.innerText.trim()).map(p => Array.from(p.querySelectorAll('span.__se-node')).filter(s => s.innerText.trim()).map(s => Array.from(s.classList).find(c => /^se-fs/.test(c)))),
       sentenceGaps: paragraphs.filter(p => /[.!?]$/.test(p.innerText.trim())).map(p => ({
-        text: p.innerText.trim(), blankAfter: !!p.nextElementSibling && !p.nextElementSibling.innerText.trim()
+        text: p.innerText.trim(), blankAfter: !!p.nextElementSibling && !p.nextElementSibling.innerText.trim(),
+        nextText: p.nextElementSibling?.innerText.trim() || ''
       })),
+      tags: (tail.map(c => c.innerText).join(' ').match(/#[^\s#]+/gu) || []),
+      tagsFont16: tailSpans.every(s => s.classList.contains('se-fs16') && !s.querySelector('b')),
+      greetingNextText: greeting?.nextElementSibling?.innerText.trim() || '',
+      trailingBlankCount,
+      noBlankBeforeThumbnail: !components.slice(1, components.indexOf(images[0])).some(c => c.classList.contains('se-text')),
+      titleThumbnailGap: images[0]?.getBoundingClientRect().top - e.querySelector('.se-documentTitle').getBoundingClientRect().bottom,
       images: images.map(c => ({ id: c.id, src: c.querySelector('img')?.src || '',
         representative: !!c.querySelector('.se-set-rep-image-button.se-is-selected'),
         linkIcon: !!c.querySelector('.se-image-link-icon') })),
@@ -126,6 +141,8 @@ export async function verifyEditor(ed, config) {
   const expectedFonts = config.blocks.filter(b => b.type !== 'image').flatMap(b => b.text.split('\n').map(() => b.type === 'heading' ? 'se-fs30' : 'se-fs16'));
   const headings = config.blocks.filter(b => b.type === 'heading').flatMap(b => b.text.split('\n'));
   const bold = config.blocks.filter(b => b.type === 'text').flatMap(b => Array.from(b.text.matchAll(/\*\*(.*?)\*\*/gs)).flatMap(m => m[1].split('\n')));
+  const compactTransitions = new Map(config.blocks.flatMap((b, i) => b.gap_after === false && config.blocks[i+1]?.text ? [[b.text.replaceAll('**', '').split('\n').at(-1), config.blocks[i+1].text.replaceAll('**', '').split('\n')[0]]] : []));
+  const expectedTags = (config.tags || []).map(t => '#' + t);
   const tests = {
     title: normalize(observed.title) === normalize(config.title),
     exactTextOrder: JSON.stringify(observed.lines) === JSON.stringify(expected),
@@ -133,12 +150,16 @@ export async function verifyEditor(ed, config) {
     headings30Bold: JSON.stringify(observed.headingLines) === JSON.stringify(headings),
     onlyChosenBodyWordsBold: JSON.stringify(observed.bodyBold) === JSON.stringify(bold),
     body16: observed.paragraphFonts.length === expectedFonts.length && observed.paragraphFonts.every((fonts, i) => fonts.length > 0 && fonts.every(c => c === expectedFonts[i])),
-    sentenceBlankLines: observed.sentenceGaps.length > 0 && observed.sentenceGaps.every(p => p.blankAfter),
+    sentenceBlankLines: observed.sentenceGaps.length > 0 && observed.sentenceGaps.every(p => p.blankAfter || compactTransitions.get(p.text) === p.nextText),
     imageCount: observed.images.length === config.blocks.filter(b => b.type === 'image').length + 1,
     representativePNG: observed.images.filter(i => i.representative).length === 1 && observed.images[0].representative && decodeURIComponent(observed.images[0].src).includes('대표사진.png'),
     gifPresent: observed.images.some(i => /\.gif/i.test(i.src)),
     lastBannerLinked: observed.images.at(-1).linkIcon,
-    noPlaceholders: observed.noPlaceholders
+    noPlaceholders: observed.noPlaceholders,
+    tagsBelowBanner: JSON.stringify(observed.tags) === JSON.stringify(expectedTags) && (!expectedTags.length || expectedTags.length === 15) && observed.tagsFont16,
+    compactGreeting: !compactTransitions.has('안녕하세요.') || observed.greetingNextText === compactTransitions.get('안녕하세요.'),
+    compactBanner: observed.trailingBlankCount <= 1,
+    compactThumbnail: observed.noBlankBeforeThumbnail
   };
   const failed = Object.entries(tests).filter(([, passed]) => !passed).map(([name]) => name);
   if (failed.length) throw Error('편집기 검사 실패: ' + failed.join(', '));

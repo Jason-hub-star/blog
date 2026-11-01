@@ -2,6 +2,8 @@
 
 사진 보정·하단 명조 로고·집 모양 PNG/GIF·모바일 원고·네이버 임시글 검증을 Mac과 Windows에서 재사용한다.
 
+사진을 받아 처음 작업하시는 분은 **[아내분용 시작 안내](docs/아내_시작하기.md)**부터 읽습니다. 현장별 원본5~10장·메모·결과를 한 폴더에 모으는 방식입니다.
+
 ## Windows 첫 실행
 
 Git과 Python 3.10 이상을 설치한 PowerShell에서:
@@ -14,23 +16,24 @@ py -3 scripts/setup.py
 
 기존에 받은 폴더는 `git pull --ff-only` 후 `py -3 scripts/setup.py`를 다시 실행한다. 기존 `post.local.json`은 덮어쓰지 않는다. 가상환경 활성화나 PowerShell 실행 정책 변경은 필요 없다.
 
-1. 실제 현장 사진을 `data/photos`에 복사한다. JPG/JPEG/PNG를 파일명순으로 읽어 photo_001부터 번호를 붙인다. 선택할 사진만 넣고, 다른 순서는 파일명을 정리한다.
-2. `post.local.json`에서 지역·제목·본문·사진 블록·썸네일·상담 링크를 이번 현장에 맞춘다. 예시는 실제 시공 사실이나 고객 후기가 아니다.
+1. `py -3 scripts/new_job.py "지역_아파트명"`으로 현장 폴더를 만든다. `현장작업/날짜_현장명/01_원본사진`에5~10장을 넣고 `현장메모.txt`를 작성한다. 제작할 때 JPG/JPEG/PNG를 파일명순으로 읽어 photo_001부터 번호를 붙인다. 스킬이 실제 사진 장수에 맞게 본문 이미지 블록을 조정한다.
+2. 현장 폴더의 `post.local.json`에서 지역·제목·본문·사진 블록·썸네일·태그15개·상담 링크를 이번 현장에 맞춘다. 예시는 실제 시공 사실이나 고객 후기가 아니다. 사실을 확인한 뒤 `needs_authoring:false`로 바꾼다. 이 작업은 스킬에 맡길 수 있다.
 3. 배너 파일이 있으면 `banner_file`에 경로를 적는다. 없으면 네이버 ‘내 템플릿’에서 마지막에 직접 삽입하고 링크를 검사한다.
 4. 제작한다:
 
 ```powershell
-.venv\Scripts\python.exe automation/build_assets.py --config post.local.json
-.venv\Scripts\python.exe automation/build_assets.py --config post.local.json --check
+.venv\Scripts\python.exe automation/build_assets.py --config "현장작업\날짜_현장명\post.local.json"
+.venv\Scripts\python.exe automation/build_assets.py --config "현장작업\날짜_현장명\post.local.json" --check
 ```
 
-`runs/current`의 `모바일_미리보기.html`, 대표사진.png, 움직이는썸네일.gif, 보정사진, 본문_1800자.txt를 확인한다. 모든 경로는 설정 파일 기준으로 해석하므로 폴더를 옮겨도 쓸 수 있다.
+현장 폴더 `03_작업결과`의 `모바일_미리보기.html`, 대표사진.png, 움직이는썸네일.gif, 보정사진, 본문_1800자.txt, 태그.txt를 확인한다. 배너 뒤에 `태그_붙여넣기.html`을 따로 붙인다. 모든 경로는 설정 파일 기준으로 해석하므로 같은 저장소 구조에서 쓸 수 있다. 루트 post.local.json/data/photos/runs/current 경로도 기존 작업 호환용으로 유지한다.
 
 ## Mac
 
 ```sh
 python3 scripts/setup.py
-.venv/bin/python automation/build_assets.py --config post.local.json
+python3 scripts/new_job.py "지역_아파트명"
+.venv/bin/python automation/build_assets.py --config "현장작업/날짜_현장명/post.local.json"
 ```
 
 이 Mac의 기존 현장/결과물은 원래 날짜 폴더에 보존했고 로컬 설정만 그 폴더를 가리킨다. 새 컴퓨터에는 현장 사진·배너를 별도로 복사해야 한다.
@@ -47,11 +50,10 @@ python3 scripts/setup.py
 ## 검사 범위
 
 ```powershell
-.venv\Scripts\python.exe scripts/self_check.py
-node tests/browser_helpers.test.mjs
+.venv\Scripts\python.exe scripts/check.py
 ```
 
-Node.js는 JS 보조 모듈 검사에 사용한다. `self_check.py`는 임시 폴더에 합성 사진7장을 만들어 한글/공백 경로·1800자·폰트·PNG/GIF·원본 보존을 검사한다. 실제 현장 파일은 읽지 않는다. GitHub Actions에서 Windows와 Linux에 같은 검사를 실행한다.
+Node.js는 JS 보조 모듈 검사에 사용한다. 게이트는0 통과/1 실패/2 도구 부재·시간 초과로 판정 못 함이다. `self_check.py`는 임시 폴더에 합성 사진7장을 만들어 한글/공백 경로·1800자·태그·폰트·PNG/GIF·원본 보존을 검사한다. `new_job.test.py`는5/10장 복사·덮어쓰기 차단·상대 배너경로·새 현장 작성 상태를 검사한다. 실제 현장 파일은 읽지 않는다. GitHub Actions에서 Windows와 Linux에 같은 검사를 실행한다.
 
 Mac 한국어 Umji 초안의 업로드·저장복원은 검증됐다. Windows의 이미지/원고 생성과 운영체제 분기 검사는 CI 결과로 판정하고, Windows 네이버 실제 업로드·저장복원은 첫 현장에서 별도로 확인해야 한다. 전체10분은 아직 계측 전이다.
 
@@ -66,6 +68,6 @@ Mac 한국어 Umji 초안의 업로드·저장복원은 검증됐다. Windows의
 | assets/fonts/ | 배포 가능한 한글 폰트와 OFL |
 | docs/STATUS.md | 목표와 현재 상태 정본 |
 | post.example.json | 공개 예시 설정 |
-| post.local.json, data/, runs/, 날짜 폴더 | 각 컴퓨터의 비공개 입력/결과, Git 제외 |
+| 현장작업/, post.local.json, data/, runs/, 날짜 폴더 | 각 컴퓨터의 비공개 입력/결과, Git 제외 |
 
 공개 저장소에는 코드·스킬·문서·폰트만 들어간다. 기존 개인 문서와 고객 사진은 루트 허용목록 방식의 .gitignore로 제외한다.

@@ -21,8 +21,8 @@ def main():
         shutil.copy2(ROOT / "post.example.json", local)
     (ROOT / "data/photos").mkdir(parents=True, exist_ok=True)
     subprocess.run([str(python), str(ROOT / "scripts/self_check.py")], check=True)
-    print("Ready. post.local.json과 data/photos를 이번 현장에 맞춰 준비하세요.")
-    print("Build:", str(python), "automation/build_assets.py --config post.local.json")
+    print("Ready. docs/아내_시작하기.md를 열고 scripts/new_job.py로 새 현장 폴더를 만드세요.")
+    print("Build:", str(python), "automation/build_assets.py --config <현장폴더>/post.local.json")
 
 
 if __name__ == "__main__":

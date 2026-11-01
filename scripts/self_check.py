@@ -52,11 +52,15 @@ def main():
         assets.check(out)
         report = json.loads((out / "검증결과.json").read_text(encoding="utf-8"))
         assert report["photos"] == 7 and report["body_chars"] == 1800
+        assert report["tag_count"] == 15
+        assert "안녕하세요.\n중문매니저입니다." in (out / "본문_1800자.txt").read_text(encoding="utf-8")
         assert report["duration_ms"] == 5000
         assert (out / "모바일_미리보기.html").is_file()
         # 실패 입력은 원본/출력을 건드리기 전에 거부해야 한다.
         before = {p: assets.sha(p) for p in photos.iterdir()}
         must_fail({**config, "body_target_chars": 1801}, "잘못된 글자 수 허용")
+        must_fail({**config, "needs_authoring": True}, "미작성 현장 생성 허용")
+        must_fail({**config, "tags": ["중문"] * 15}, "중복 태그 허용")
         must_fail({**config, "output_dir": str(photos)}, "원본 덮어쓰기 허용")
         must_fail({**config, "output_dir": str(photos / "output")}, "원본 내부 출력 허용")
         must_fail({**config, "output_dir": str(base)}, "출력 내부 원본 허용")
